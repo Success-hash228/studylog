@@ -10,53 +10,65 @@ function renderSessions() {
   sessionList.innerHTML = '';
   let total = 0;
 
-  sessions.forEach(session => {
+  sessions.forEach((session, index) => {
     const li = document.createElement('li');
-    li.textContent = `${session.subject}: ${session.duration} minutes`;
+    li.textContent = `${session.subject}: ${session.duration} minutes `;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.addEventListener('click', function() {
+      sessions.splice(index, 1);
+      localStorage.setItem('sessions', JSON.stringify(sessions));
+      renderSessions();
+    });
+
+    li.appendChild(deleteBtn);
     sessionList.appendChild(li);
     total += session.duration;
   });
 
   totalTimeDisplay.textContent = total;
+  renderBreakdown();
 }
-form.addEventListener('submit', function(event) {
-    event.preventDefault();
-  
-    const subject = subjectInput.value;
-    const duration = parseInt(durationInput.value);
-  
-    const newSession = {
-      subject: subject,
-      duration: duration
-    };
-  
-    sessions.push(newSession);
-    localStorage.setItem('sessions', JSON.stringify(sessions));
-  
-    renderSessions();
-  
-    form.reset();
+
+function renderBreakdown() {
+  const breakdown = {};
+
+  sessions.forEach(session => {
+    if (breakdown[session.subject]) {
+      breakdown[session.subject] += session.duration;
+    } else {
+      breakdown[session.subject] = session.duration;
+    }
   });
-  function renderSessions() {
-    sessionList.innerHTML = '';
-    let total = 0;
-  
-    sessions.forEach((session, index) => {
-      const li = document.createElement('li');
-      li.textContent = `${session.subject}: ${session.duration} minutes `;
-  
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.addEventListener('click', function() {
-        sessions.splice(index, 1);
-        localStorage.setItem('sessions', JSON.stringify(sessions));
-        renderSessions();
-      });
-  
-      li.appendChild(deleteBtn);
-      sessionList.appendChild(li);
-      total += session.duration;
-    });
-  
-    totalTimeDisplay.textContent = total;
+
+  const breakdownList = document.getElementById('breakdown-list');
+  breakdownList.innerHTML = '';
+
+  for (const subject in breakdown) {
+    const li = document.createElement('li');
+    li.textContent = `${subject}: ${breakdown[subject]} minutes`;
+    breakdownList.appendChild(li);
   }
+}
+
+form.addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  const subject = subjectInput.value;
+  const duration = parseInt(durationInput.value);
+
+  const newSession = {
+    subject: subject,
+    duration: duration
+  };
+
+  sessions.push(newSession);
+  localStorage.setItem('sessions', JSON.stringify(sessions));
+
+  renderSessions();
+
+  form.reset();
+});
+
+renderSessions();
