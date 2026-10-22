@@ -37,4 +37,26 @@ form.addEventListener('submit', function(event) {
   
     form.reset();
   });
-  renderSessions();
+  function renderSessions() {
+    sessionList.innerHTML = '';
+    let total = 0;
+  
+    sessions.forEach((session, index) => {
+      const li = document.createElement('li');
+      li.textContent = `${session.subject}: ${session.duration} minutes `;
+  
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', function() {
+        sessions.splice(index, 1);
+        localStorage.setItem('sessions', JSON.stringify(sessions));
+        renderSessions();
+      });
+  
+      li.appendChild(deleteBtn);
+      sessionList.appendChild(li);
+      total += session.duration;
+    });
+  
+    totalTimeDisplay.textContent = total;
+  }
