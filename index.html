@@ -7,22 +7,33 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Study Tracker</h1>
-    
-        <form id="session-form">
-          <input type="text" id="subject" placeholder="Subject (e.g. Anatomy)" required>
-          <input type="number" id="duration" placeholder="Minutes studied" required>
-          <button type="submit">Log Session</button>
-        </form>
-    
-        <h2>Your Sessions</h2>
-        <ul id="session-list"></ul>
-    
-        <h2>Total Time Studied: <span id="total-time">0</span> minutes</h2>
-        <h2>Breakdown by Subject</h2>
-        <ul id="breakdown-list"></ul>
+  <div class="container">
+      <h1>Study Tracker</h1>
+  
+      <form id="session-form">
+        <input type="text" id="subject" placeholder="Subject (e.g. Anatomy)" required>
+        <input type="number" id="duration" placeholder="Minutes studied" required>
+        <button type="submit">Log Session</button>
+      </form>
+  
+      <h2>Your Sessions</h2>
+      <ul id="session-list"></ul>
+  
+      <h2>Total Time Studied: <span id="total-time">0</span> minutes</h2>
+      <h2>Breakdown by Subject</h2>
+      <ul id="breakdown-list"></ul>
+
+      <h2>Weekly Goal</h2>
+      <div class="goal-setup">
+        <input type="number" id="goal-input" placeholder="Set weekly goal (minutes)">
+        <button id="set-goal-btn">Set Goal</button>
       </div>
-      <script src="script.js"></script>
+      <div class="progress-bar-container">
+        <div id="progress-bar"></div>
+      </div>
+      <p id="goal-text"></p>
+      <button id="export-btn">Export Sessions (CSV)</button>
+    </div>
+    <script src="script.js"></script>
 </body>
-</html>ddddd
+</html>
