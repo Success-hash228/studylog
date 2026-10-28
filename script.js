@@ -8,6 +8,7 @@ const setGoalBtn = document.getElementById('set-goal-btn');
 const progressBar = document.getElementById('progress-bar');
 const goalText = document.getElementById('goal-text');
 const exportBtn = document.getElementById('export-btn');
+
 let sessions = JSON.parse(localStorage.getItem('sessions')) || [];
 let weeklyGoal = JSON.parse(localStorage.getItem('weeklyGoal')) || 0;
 
@@ -23,7 +24,16 @@ function renderSessions() {
 
   sessions.forEach((session, index) => {
     const li = document.createElement('li');
-    li.textContent = `${session.subject}: ${session.duration} minutes `;
+
+    const textSpan = document.createElement('span');
+    textSpan.textContent = `${session.subject}: ${session.duration} minutes`;
+    li.appendChild(textSpan);
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', function() {
+      startEdit(index, li);
+    });
 
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete';
@@ -33,6 +43,7 @@ function renderSessions() {
       renderSessions();
     });
 
+    li.appendChild(editBtn);
     li.appendChild(deleteBtn);
     sessionList.appendChild(li);
     total += session.duration;
@@ -41,26 +52,32 @@ function renderSessions() {
   totalTimeDisplay.textContent = total;
   renderBreakdown();
   renderGoalProgress();
-  function exportToCSV() {
-    let csvContent = "Subject,Duration (minutes),Date\n";
-  
-    sessions.forEach(session => {
-      const dateStr = session.date ? new Date(session.date).toLocaleDateString() : "N/A";
-      csvContent += `${session.subject},${session.duration},${dateStr}\n`;
-    });
-  
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-  
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'study_sessions.csv';
-    link.click();
-  
-    URL.revokeObjectURL(url);
-  }
-  
-  exportBtn.addEventListener('click', exportToCSV);
+}
+
+function startEdit(index, li) {
+  const session = sessions[index];
+  li.innerHTML = '';
+
+  const subjectEditInput = document.createElement('input');
+  subjectEditInput.type = 'text';
+  subjectEditInput.value = session.subject;
+
+  const durationEditInput = document.createElement('input');
+  durationEditInput.type = 'number';
+  durationEditInput.value = session.duration;
+
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = 'Save';
+  saveBtn.addEventListener('click', function() {
+    sessions[index].subject = subjectEditInput.value;
+    sessions[index].duration = parseInt(durationEditInput.value);
+    localStorage.setItem('sessions', JSON.stringify(sessions));
+    renderSessions();
+  });
+
+  li.appendChild(subjectEditInput);
+  li.appendChild(durationEditInput);
+  li.appendChild(saveBtn);
 }
 
 function renderBreakdown() {
@@ -103,6 +120,27 @@ function renderGoalProgress() {
   }
 }
 
+function exportToCSV() {
+  let csvContent = "Subject,Duration (minutes),Date\n";
+
+  sessions.forEach(session => {
+    const dateStr = session.date ? new Date(session.date).toLocaleDateString() : "N/A";
+    csvContent += `${session.subject},${session.duration},${dateStr}\n`;
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'study_sessions.csv';
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+exportBtn.addEventListener('click', exportToCSV);
+
 setGoalBtn.addEventListener('click', function() {
   const goal = parseInt(goalInput.value);
   if (goal > 0) {
@@ -133,4 +171,4 @@ form.addEventListener('submit', function(event) {
   form.reset();
 });
 
-renderSessions();
+renderSessions(); 
