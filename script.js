@@ -195,21 +195,25 @@ setGoalBtn.addEventListener('click', function() {
 form.addEventListener('submit', function(event) {
   event.preventDefault();
 
-  const enteredSubject = subjectInput.value.trim();
-  const enteredDuration = parseInt(durationInput.value);
+  const subject = subjectInput.value.trim();
+  const duration = parseInt(durationInput.value);
 
-  if (!enteredSubject || !enteredDuration) return;
+  if (!subject || duration <= 0 || isNaN(duration)) {
+    alert('Please enter a valid subject and a duration greater than 0.');
+    return;
+  }
 
-  const sessionObject = {
-    subject: enteredSubject,
-    duration: enteredDuration,
+  const newSession = {
+    subject: subject,
+    duration: duration,
     date: new Date().toISOString()
   };
 
-  sessions.push(sessionObject);
+  sessions.push(newSession);
   localStorage.setItem('sessions', JSON.stringify(sessions));
 
   renderSessions();
+
   form.reset();
 });
 
