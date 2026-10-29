@@ -8,31 +8,39 @@ const setGoalBtn = document.getElementById('set-goal-btn');
 const progressBar = document.getElementById('progress-bar');
 const goalText = document.getElementById('goal-text');
 const exportBtn = document.getElementById('export-btn');
+const clearAllBtn = document.getElementById('clear-all-btn');
 
-// Pull existing data or start fresh
 let sessions = JSON.parse(localStorage.getItem('sessions')) || [];
 let weeklyGoal = JSON.parse(localStorage.getItem('weeklyGoal')) || 0;
 
-// Replaced complex math with a simpler, easy-to-explain day count string
 function getWeekIdentifier(dateObj) {
   const date = new Date(dateObj);
   const year = date.getFullYear();
-  
-  // Calculate day of the year manually (much easier to explain to a reviewer)
   const startOfYear = new Date(year, 0, 1);
   const diffInMs = date - startOfYear;
   const oneDayInMs = 1000 * 60 * 60 * 24;
   const dayOfYear = Math.floor(diffInMs / oneDayInMs) + 1;
-  
   const weekNum = Math.ceil(dayOfYear / 7);
-  return `${year}-W${weekNum}`; // Returns something clean like "2026-W44"
+  return `${year}-W${weekNum}`;
 }
 
 function renderSessions() {
   sessionList.innerHTML = '';
   let runningTotalMinutes = 0;
 
-  sessions.forEach((session, currentIndex) => {
+  document.getElementById('session-count').textContent = sessions.length;
+
+  if (sessions.length === 0) {
+    const emptyMsg = document.createElement('li');
+    emptyMsg.textContent = 'No sessions logged yet — add one above!';
+    emptyMsg.style.textAlign = 'center';
+    emptyMsg.style.color = '#999';
+    emptyMsg.style.background = 'none';
+    sessionList.appendChild(emptyMsg);
+  }
+
+  [...sessions].reverse().forEach((session, reversedIndex) => {
+    const currentIndex = sessions.length - 1 - reversedIndex;
     const listItem = document.createElement('li');
 
     const textSpan = document.createElement('span');
@@ -48,7 +56,6 @@ function renderSessions() {
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = 'Delete';
     deleteBtn.addEventListener('click', function() {
-      // Remove just this one item from the array
       sessions.splice(currentIndex, 1);
       localStorage.setItem('sessions', JSON.stringify(sessions));
       renderSessions();
@@ -57,7 +64,7 @@ function renderSessions() {
     listItem.appendChild(editBtn);
     listItem.appendChild(deleteBtn);
     sessionList.appendChild(listItem);
-    
+
     runningTotalMinutes += session.duration;
   });
 
@@ -68,7 +75,7 @@ function renderSessions() {
 
 function triggerEditMode(index, listItem) {
   const currentSession = sessions[index];
-  listItem.innerHTML = ''; // Wipe out the text and buttons to show inputs instead
+  listItem.innerHTML = '';
 
   const subjectEditInput = document.createElement('input');
   subjectEditInput.type = 'text';
@@ -95,7 +102,6 @@ function triggerEditMode(index, listItem) {
 function renderBreakdown() {
   const timeBySubject = {};
 
-  // Tally up total minutes per subject
   sessions.forEach(session => {
     if (timeBySubject[session.subject]) {
       timeBySubject[session.subject] += session.duration;
@@ -107,14 +113,11 @@ function renderBreakdown() {
   const breakdownList = document.getElementById('breakdown-list');
   breakdownList.innerHTML = '';
 
-  // Get the single highest minute count to be our 100% width anchor
   const valuesArray = Object.values(timeBySubject);
   const maxMinutesSpent = valuesArray.length > 0 ? Math.max(...valuesArray) : 1;
 
-  // Build the visual UI bars
   Object.keys(timeBySubject).forEach(subject => {
     const minutes = timeBySubject[subject];
-    // Calculate the percentage relative to the top subject
     const barPercentage = (minutes / maxMinutesSpent) * 100;
 
     const listItem = document.createElement('li');
@@ -129,7 +132,7 @@ function renderBreakdown() {
 
     const visualBar = document.createElement('div');
     visualBar.classList.add('breakdown-bar');
-    visualBar.style.width = barPercentage + '%'; // Dynamic sizing
+    visualBar.style.width = barPercentage + '%';
 
     barWrapper.appendChild(visualBar);
     listItem.appendChild(labelDiv);
@@ -141,13 +144,11 @@ function renderBreakdown() {
 function renderGoalProgress() {
   const thisWeekId = getWeekIdentifier(new Date());
 
-  // Filter out any sessions that don't match our current week identifier
   const filteredSessions = sessions.filter(session => {
     const sessionDate = session.date ? new Date(session.date) : new Date();
     return getWeekIdentifier(sessionDate) === thisWeekId;
   });
 
-  // Sum up the filtered hours
   const totalMinutesThisWeek = filteredSessions.reduce((sum, item) => sum + item.duration, 0);
 
   if (weeklyGoal > 0) {
@@ -161,7 +162,6 @@ function renderGoalProgress() {
 }
 
 function exportToCSV() {
-  // Setup the CSV headers
   let csvDataString = "Subject,Duration (minutes),Date\n";
 
   sessions.forEach(session => {
@@ -181,6 +181,14 @@ function exportToCSV() {
 }
 
 exportBtn.addEventListener('click', exportToCSV);
+
+clearAllBtn.addEventListener('click', function() {
+  if (confirm('Are you sure you want to delete all sessions? This cannot be undone.')) {
+    sessions = [];
+    localStorage.setItem('sessions', JSON.stringify(sessions));
+    renderSessions();
+  }
+});
 
 setGoalBtn.addEventListener('click', function() {
   const customGoalValue = parseInt(goalInput.value);
@@ -217,5 +225,4 @@ form.addEventListener('submit', function(event) {
   form.reset();
 });
 
-// Initial boot up
 renderSessions();
