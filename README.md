@@ -21,7 +21,3 @@ Started with a basic HTML form and a list, using JavaScript to handle form submi
 - HTML
 - CSS
 - JavaScript (vanilla, no frameworks) 
-
-
-
-
